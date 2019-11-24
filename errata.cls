@@ -19,6 +19,7 @@
 \DeclareStringOption[en]{lang}
 \DeclareVoidOption{cn}{\ekv{lang = cn}}
 \DeclareVoidOption{en}{\ekv{lang = en}}
+\DeclareVoidOption{zh}{\ekv{lang = zh}}
 
 \DeclareStringOption[numbers]{cite}[numbers]
 \DeclareVoidOption{numbers}{\ekv{cite=numbers}}
@@ -164,6 +165,35 @@
 	\newcommand\figref[1]{{\bfseries Figure~\ref{#1}}}
 	\newcommand\tabref[1]{{\bfseries Table~\ref{#1}}}
   	\bibliographystyle{aer}
+}{\relax}
+\ifdefstring{\ELEGANT@lang}{zh}{
+    \theoremstyle{plain}% default
+	\newtheorem{theorem}{定理}[section] %
+	\newtheorem{lemma}[theorem]{引理} %
+	\newtheorem{proposition}[theorem]{性質} %
+	\newtheorem*{corollary}{推論} %
+	\theoremstyle{definition} %
+	\newtheorem{definition}{定義}[section] %
+	\newtheorem{conjecture}{猜想}[section] %
+	\newtheorem{example}{例}[section] %
+	\theoremstyle{remark} %
+	\newtheorem*{remark}{\normalfont\bfseries 評論} %
+	\newtheorem*{note}{\normalfont\bfseries 注} %
+	\newtheorem{case}{\normalfont\bfseries 案例} %
+	\renewcommand*{\proofname}{\normalfont\bfseries 證明} %
+	\renewcommand\contentsname{目錄}
+	\renewcommand\refname{參考文獻} %
+	\renewcommand\figurename{圖} %
+	\renewcommand\tablename{表}%
+	\newcommand\versiontext{版本：}%
+	\newcommand\updatetext{日期：}%
+	\renewcommand\abstractname{摘\hspace{2em}要}
+	\setlength{\parindent}{2em}
+	\renewcommand{\abstracttextfont}{\small\sffamily\kaishu\noindent\ignorespaces}
+	\newcommand{\keywords}[1]{\vskip2ex\par\noindent\normalfont{\bfseries 關鍵詞: } #1}
+	\newcommand\figref[1]{{\bfseries 圖~\ref{#1}}}
+	\newcommand\tabref[1]{{\bfseries 表~\ref{#1}}}
+%	\RequirePackage{gbt7714}
 }{\relax}
 
 \AtBeginEnvironment{verbatim}{\microtypesetup{activate=false}}
