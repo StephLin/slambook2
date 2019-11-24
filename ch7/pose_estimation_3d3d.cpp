@@ -25,7 +25,7 @@ void find_feature_matches(
   std::vector<KeyPoint> &keypoints_2,
   std::vector<DMatch> &matches);
 
-// 像素坐标转相机归一化坐标
+// 像素座標轉相機歸一化座標
 Point2d pixel2cam(const Point2d &p, const Mat &K);
 
 void pose_estimation_3d3d(
@@ -94,18 +94,18 @@ int main(int argc, char **argv) {
     cout << "usage: pose_estimation_3d3d img1 img2 depth1 depth2" << endl;
     return 1;
   }
-  //-- 读取图像
+  //-- 讀取圖像
   Mat img_1 = imread(argv[1], CV_LOAD_IMAGE_COLOR);
   Mat img_2 = imread(argv[2], CV_LOAD_IMAGE_COLOR);
 
   vector<KeyPoint> keypoints_1, keypoints_2;
   vector<DMatch> matches;
   find_feature_matches(img_1, img_2, keypoints_1, keypoints_2, matches);
-  cout << "一共找到了" << matches.size() << "组匹配点" << endl;
+  cout << "一共找到了" << matches.size() << "組匹配點" << endl;
 
-  // 建立3D点
-  Mat depth1 = imread(argv[3], CV_LOAD_IMAGE_UNCHANGED);       // 深度图为16位无符号数，单通道图像
-  Mat depth2 = imread(argv[4], CV_LOAD_IMAGE_UNCHANGED);       // 深度图为16位无符号数，单通道图像
+  // 建立3D點
+  Mat depth1 = imread(argv[3], CV_LOAD_IMAGE_UNCHANGED);       // 深度圖爲16位無符號數，單通道圖像
+  Mat depth2 = imread(argv[4], CV_LOAD_IMAGE_UNCHANGED);       // 深度圖爲16位無符號數，單通道圖像
   Mat K = (Mat_<double>(3, 3) << 520.9, 0, 325.1, 0, 521.0, 249.7, 0, 0, 1);
   vector<Point3f> pts1, pts2;
 
@@ -159,23 +159,23 @@ void find_feature_matches(const Mat &img_1, const Mat &img_2,
   // Ptr<FeatureDetector> detector = FeatureDetector::create ( "ORB" );
   // Ptr<DescriptorExtractor> descriptor = DescriptorExtractor::create ( "ORB" );
   Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce-Hamming");
-  //-- 第一步:检测 Oriented FAST 角点位置
+  //-- 第一步:檢測 Oriented FAST 角點位置
   detector->detect(img_1, keypoints_1);
   detector->detect(img_2, keypoints_2);
 
-  //-- 第二步:根据角点位置计算 BRIEF 描述子
+  //-- 第二步:根據角點位置計算 BRIEF 描述子
   descriptor->compute(img_1, keypoints_1, descriptors_1);
   descriptor->compute(img_2, keypoints_2, descriptors_2);
 
-  //-- 第三步:对两幅图像中的BRIEF描述子进行匹配，使用 Hamming 距离
+  //-- 第三步:對兩幅圖像中的BRIEF描述子進行匹配，使用 Hamming 距離
   vector<DMatch> match;
   // BFMatcher matcher ( NORM_HAMMING );
   matcher->match(descriptors_1, descriptors_2, match);
 
-  //-- 第四步:匹配点对筛选
+  //-- 第四步:匹配點對篩選
   double min_dist = 10000, max_dist = 0;
 
-  //找出所有匹配之间的最小距离和最大距离, 即是最相似的和最不相似的两组点之间的距离
+  //找出所有匹配之間的最小距離和最大距離, 即是最相似的和最不相似的兩組點之間的距離
   for (int i = 0; i < descriptors_1.rows; i++) {
     double dist = match[i].distance;
     if (dist < min_dist) min_dist = dist;
@@ -185,7 +185,7 @@ void find_feature_matches(const Mat &img_1, const Mat &img_2,
   printf("-- Max dist : %f \n", max_dist);
   printf("-- Min dist : %f \n", min_dist);
 
-  //当描述子之间的距离大于两倍的最小距离时,即认为匹配有误.但有时候最小距离会非常小,设置一个经验值30作为下限.
+  //當描述子之間的距離大於兩倍的最小距離時,即認爲匹配有誤.但有時候最小距離會非常小,設置一個經驗值30作爲下限.
   for (int i = 0; i < descriptors_1.rows; i++) {
     if (match[i].distance <= max(2 * min_dist, 30.0)) {
       matches.push_back(match[i]);
@@ -251,15 +251,15 @@ void bundleAdjustment(
   const vector<Point3f> &pts1,
   const vector<Point3f> &pts2,
   Mat &R, Mat &t) {
-  // 构建图优化，先设定g2o
+  // 構建圖優化，先設定g2o
   typedef g2o::BlockSolverX BlockSolverType;
-  typedef g2o::LinearSolverDense<BlockSolverType::PoseMatrixType> LinearSolverType; // 线性求解器类型
-  // 梯度下降方法，可以从GN, LM, DogLeg 中选
+  typedef g2o::LinearSolverDense<BlockSolverType::PoseMatrixType> LinearSolverType; // 線性求解器類型
+  // 梯度下降方法，可以從GN, LM, DogLeg 中選
   auto solver = new g2o::OptimizationAlgorithmLevenberg(
     g2o::make_unique<BlockSolverType>(g2o::make_unique<LinearSolverType>()));
-  g2o::SparseOptimizer optimizer;     // 图模型
-  optimizer.setAlgorithm(solver);   // 设置求解器
-  optimizer.setVerbose(true);       // 打开调试输出
+  g2o::SparseOptimizer optimizer;     // 圖模型
+  optimizer.setAlgorithm(solver);   // 設置求解器
+  optimizer.setVerbose(true);       // 打開調試輸出
 
   // vertex
   VertexPose *pose = new VertexPose(); // camera pose

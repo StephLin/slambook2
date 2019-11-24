@@ -10,7 +10,7 @@ using namespace cv;
 using namespace std;
 
 /***************************************************
- * 本节演示了如何根据前面训练的字典计算相似性评分
+ * 本節演示瞭如何根據前面訓練的字典計算相似性評分
  * ************************************************/
 int main(int argc, char **argv) {
     // read the images and database  

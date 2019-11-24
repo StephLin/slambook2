@@ -11,7 +11,7 @@
 namespace myslam {
 
 /**
- * VO 对外接口
+ * VO 對外接口
  */
 class VisualOdometry {
    public:
@@ -37,7 +37,7 @@ class VisualOdometry {
      */
     bool Step();
 
-    /// 获取前端状态
+    /// 獲取前端狀態
     FrontendStatus GetFrontendStatus() const { return frontend_->GetStatus(); }
 
    private:

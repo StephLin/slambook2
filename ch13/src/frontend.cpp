@@ -109,7 +109,7 @@ int Frontend::TriangulateNewPoints() {
     for (size_t i = 0; i < current_frame_->features_left_.size(); ++i) {
         if (current_frame_->features_left_[i]->map_point_.expired() &&
             current_frame_->features_right_[i] != nullptr) {
-            // 左图的特征点未关联地图点且存在右图匹配点，尝试三角化
+            // 左圖的特徵點未關聯地圖點且存在右圖匹配點，嘗試三角化
             std::vector<Vec3> points{
                 camera_left_->pixel2camera(
                     Vec2(current_frame_->features_left_[i]->position_.pt.x,

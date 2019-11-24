@@ -13,8 +13,8 @@ struct MapPoint;
 struct Feature;
 
 /**
- * 帧
- * 每一帧分配独立id，关键帧分配关键帧ID
+ * 幀
+ * 每一幀分配獨立id，關鍵幀分配關鍵幀ID
  */
 struct Frame {
    public:
@@ -23,10 +23,10 @@ struct Frame {
 
     unsigned long id_ = 0;           // id of this frame
     unsigned long keyframe_id_ = 0;  // id of key frame
-    bool is_keyframe_ = false;       // 是否为关键帧
-    double time_stamp_;              // 时间戳，暂不使用
+    bool is_keyframe_ = false;       // 是否爲關鍵幀
+    double time_stamp_;              // 時間戳，暫不使用
     SE3 pose_;                       // Tcw 形式Pose
-    std::mutex pose_mutex_;          // Pose数据锁
+    std::mutex pose_mutex_;          // Pose數據鎖
     cv::Mat left_img_, right_img_;   // stereo images
 
     // extracted features in left image
@@ -51,10 +51,10 @@ struct Frame {
         pose_ = pose;
     }
 
-    /// 设置关键帧并分配并键帧id
+    /// 設置關鍵幀並分配並鍵幀id
     void SetKeyFrame();
 
-    /// 工厂构建模式，分配id 
+    /// 工廠構建模式，分配id 
     static std::shared_ptr<Frame> CreateFrame();
 };
 

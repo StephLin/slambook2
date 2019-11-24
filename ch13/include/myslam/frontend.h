@@ -17,7 +17,7 @@ enum class FrontendStatus { INITING, TRACKING_GOOD, TRACKING_BAD, LOST };
 
 /**
  * 前端
- * 估计当前帧Pose，在满足关键帧条件时向地图加入关键帧并触发优化
+ * 估計當前幀Pose，在滿足關鍵幀條件時向地圖加入關鍵幀並觸發優化
  */
 class Frontend {
    public:
@@ -26,10 +26,10 @@ class Frontend {
 
     Frontend();
 
-    /// 外部接口，添加一个帧并计算其定位结果
+    /// 外部接口，添加一個幀並計算其定位結果
     bool AddFrame(Frame::Ptr frame);
 
-    /// Set函数
+    /// Set函數
     void SetMap(Map::Ptr map) { map_ = map; }
 
     void SetBackend(std::shared_ptr<Backend> backend) { backend_ = backend; }
@@ -113,16 +113,16 @@ class Frontend {
     // data
     FrontendStatus status_ = FrontendStatus::INITING;
 
-    Frame::Ptr current_frame_ = nullptr;  // 当前帧
-    Frame::Ptr last_frame_ = nullptr;     // 上一帧
-    Camera::Ptr camera_left_ = nullptr;   // 左侧相机
-    Camera::Ptr camera_right_ = nullptr;  // 右侧相机
+    Frame::Ptr current_frame_ = nullptr;  // 當前幀
+    Frame::Ptr last_frame_ = nullptr;     // 上一幀
+    Camera::Ptr camera_left_ = nullptr;   // 左側相機
+    Camera::Ptr camera_right_ = nullptr;  // 右側相機
 
     Map::Ptr map_ = nullptr;
     std::shared_ptr<Backend> backend_ = nullptr;
     std::shared_ptr<Viewer> viewer_ = nullptr;
 
-    SE3 relative_motion_;  // 当前帧与上一帧的相对运动，用于估计当前帧pose初值
+    SE3 relative_motion_;  // 當前幀與上一幀的相對運動，用於估計當前幀pose初值
 
     int tracking_inliers_ = 0;  // inliers, used for testing new keyframes
 

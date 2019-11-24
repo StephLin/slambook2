@@ -9,31 +9,31 @@
 
 using namespace std;
 
-// 代价函数的计算模型
+// 代價函數的計算模型
 struct CURVE_FITTING_COST {
   CURVE_FITTING_COST(double x, double y) : _x(x), _y(y) {}
 
-  // 残差的计算
+  // 殘差的計算
   template<typename T>
   bool operator()(
-    const T *const abc, // 模型参数，有3维
+    const T *const abc, // 模型參數，有3維
     T *residual) const {
     residual[0] = T(_y) - ceres::exp(abc[0] * T(_x) * T(_x) + abc[1] * T(_x) + abc[2]); // y-exp(ax^2+bx+c)
     return true;
   }
 
-  const double _x, _y;    // x,y数据
+  const double _x, _y;    // x,y數據
 };
 
 int main(int argc, char **argv) {
-  double ar = 1.0, br = 2.0, cr = 1.0;         // 真实参数值
-  double ae = 2.0, be = -1.0, ce = 5.0;        // 估计参数值
-  int N = 100;                                 // 数据点
-  double w_sigma = 1.0;                        // 噪声Sigma值
+  double ar = 1.0, br = 2.0, cr = 1.0;         // 真實參數值
+  double ae = 2.0, be = -1.0, ce = 5.0;        // 估計參數值
+  int N = 100;                                 // 數據點
+  double w_sigma = 1.0;                        // 噪聲Sigma值
   double inv_sigma = 1.0 / w_sigma;
-  cv::RNG rng;                                 // OpenCV随机数产生器
+  cv::RNG rng;                                 // OpenCV隨機數產生器
 
-  vector<double> x_data, y_data;      // 数据
+  vector<double> x_data, y_data;      // 數據
   for (int i = 0; i < N; i++) {
     double x = i / 100.0;
     x_data.push_back(x);
@@ -42,32 +42,32 @@ int main(int argc, char **argv) {
 
   double abc[3] = {ae, be, ce};
 
-  // 构建最小二乘问题
+  // 構建最小二乘問題
   ceres::Problem problem;
   for (int i = 0; i < N; i++) {
-    problem.AddResidualBlock(     // 向问题中添加误差项
-      // 使用自动求导，模板参数：误差类型，输出维度，输入维度，维数要与前面struct中一致
+    problem.AddResidualBlock(     // 向問題中添加誤差項
+      // 使用自動求導，模板參數：誤差類型，輸出維度，輸入維度，維數要與前面struct中一致
       new ceres::AutoDiffCostFunction<CURVE_FITTING_COST, 1, 3>(
         new CURVE_FITTING_COST(x_data[i], y_data[i])
       ),
-      nullptr,            // 核函数，这里不使用，为空
-      abc                 // 待估计参数
+      nullptr,            // 核函數，這裏不使用，爲空
+      abc                 // 待估計參數
     );
   }
 
   // 配置求解器
-  ceres::Solver::Options options;     // 这里有很多配置项可以填
+  ceres::Solver::Options options;     // 這裏有很多配置項可以填
   options.linear_solver_type = ceres::DENSE_NORMAL_CHOLESKY;  // 增量方程如何求解
-  options.minimizer_progress_to_stdout = true;   // 输出到cout
+  options.minimizer_progress_to_stdout = true;   // 輸出到cout
 
-  ceres::Solver::Summary summary;                // 优化信息
+  ceres::Solver::Summary summary;                // 優化信息
   chrono::steady_clock::time_point t1 = chrono::steady_clock::now();
-  ceres::Solve(options, &problem, &summary);  // 开始优化
+  ceres::Solve(options, &problem, &summary);  // 開始優化
   chrono::steady_clock::time_point t2 = chrono::steady_clock::now();
   chrono::duration<double> time_used = chrono::duration_cast<chrono::duration<double>>(t2 - t1);
   cout << "solve time cost = " << time_used.count() << " seconds. " << endl;
 
-  // 输出结果
+  // 輸出結果
   cout << summary.BriefReport() << endl;
   cout << "estimated a,b,c = ";
   for (auto a:abc) cout << a << " ";

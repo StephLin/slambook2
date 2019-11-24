@@ -24,7 +24,7 @@ void triangulation(
   vector<Point3d> &points
 );
 
-/// 作图用
+/// 作圖用
 inline cv::Scalar get_color(float depth) {
   float up_th = 50, low_th = 10, th_range = up_th - low_th;
   if (depth > up_th) depth = up_th;
@@ -32,7 +32,7 @@ inline cv::Scalar get_color(float depth) {
   return cv::Scalar(255 * depth / th_range, 0, 255 * (1 - depth / th_range));
 }
 
-// 像素坐标转相机归一化坐标
+// 像素座標轉相機歸一化座標
 Point2f pixel2cam(const Point2d &p, const Mat &K);
 
 int main(int argc, char **argv) {
@@ -40,16 +40,16 @@ int main(int argc, char **argv) {
     cout << "usage: triangulation img1 img2" << endl;
     return 1;
   }
-  //-- 读取图像
+  //-- 讀取圖像
   Mat img_1 = imread(argv[1], CV_LOAD_IMAGE_COLOR);
   Mat img_2 = imread(argv[2], CV_LOAD_IMAGE_COLOR);
 
   vector<KeyPoint> keypoints_1, keypoints_2;
   vector<DMatch> matches;
   find_feature_matches(img_1, img_2, keypoints_1, keypoints_2, matches);
-  cout << "一共找到了" << matches.size() << "组匹配点" << endl;
+  cout << "一共找到了" << matches.size() << "組匹配點" << endl;
 
-  //-- 估计两张图像间运动
+  //-- 估計兩張圖像間運動
   Mat R, t;
   pose_estimation_2d2d(keypoints_1, keypoints_2, matches, R, t);
 
@@ -57,18 +57,18 @@ int main(int argc, char **argv) {
   vector<Point3d> points;
   triangulation(keypoints_1, keypoints_2, matches, R, t, points);
 
-  //-- 验证三角化点与特征点的重投影关系
+  //-- 驗證三角化點與特徵點的重投影關係
   Mat K = (Mat_<double>(3, 3) << 520.9, 0, 325.1, 0, 521.0, 249.7, 0, 0, 1);
   Mat img1_plot = img_1.clone();
   Mat img2_plot = img_2.clone();
   for (int i = 0; i < matches.size(); i++) {
-    // 第一个图
+    // 第一個圖
     float depth1 = points[i].z;
     cout << "depth: " << depth1 << endl;
     Point2d pt1_cam = pixel2cam(keypoints_1[matches[i].queryIdx].pt, K);
     cv::circle(img1_plot, keypoints_1[matches[i].queryIdx].pt, 2, get_color(depth1), 2);
 
-    // 第二个图
+    // 第二個圖
     Mat pt2_trans = R * (Mat_<double>(3, 1) << points[i].x, points[i].y, points[i].z) + t;
     float depth2 = pt2_trans.at<double>(2, 0);
     cv::circle(img2_plot, keypoints_2[matches[i].trainIdx].pt, 2, get_color(depth2), 2);
@@ -93,23 +93,23 @@ void find_feature_matches(const Mat &img_1, const Mat &img_2,
   // Ptr<FeatureDetector> detector = FeatureDetector::create ( "ORB" );
   // Ptr<DescriptorExtractor> descriptor = DescriptorExtractor::create ( "ORB" );
   Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce-Hamming");
-  //-- 第一步:检测 Oriented FAST 角点位置
+  //-- 第一步:檢測 Oriented FAST 角點位置
   detector->detect(img_1, keypoints_1);
   detector->detect(img_2, keypoints_2);
 
-  //-- 第二步:根据角点位置计算 BRIEF 描述子
+  //-- 第二步:根據角點位置計算 BRIEF 描述子
   descriptor->compute(img_1, keypoints_1, descriptors_1);
   descriptor->compute(img_2, keypoints_2, descriptors_2);
 
-  //-- 第三步:对两幅图像中的BRIEF描述子进行匹配，使用 Hamming 距离
+  //-- 第三步:對兩幅圖像中的BRIEF描述子進行匹配，使用 Hamming 距離
   vector<DMatch> match;
   // BFMatcher matcher ( NORM_HAMMING );
   matcher->match(descriptors_1, descriptors_2, match);
 
-  //-- 第四步:匹配点对筛选
+  //-- 第四步:匹配點對篩選
   double min_dist = 10000, max_dist = 0;
 
-  //找出所有匹配之间的最小距离和最大距离, 即是最相似的和最不相似的两组点之间的距离
+  //找出所有匹配之間的最小距離和最大距離, 即是最相似的和最不相似的兩組點之間的距離
   for (int i = 0; i < descriptors_1.rows; i++) {
     double dist = match[i].distance;
     if (dist < min_dist) min_dist = dist;
@@ -119,7 +119,7 @@ void find_feature_matches(const Mat &img_1, const Mat &img_2,
   printf("-- Max dist : %f \n", max_dist);
   printf("-- Min dist : %f \n", min_dist);
 
-  //当描述子之间的距离大于两倍的最小距离时,即认为匹配有误.但有时候最小距离会非常小,设置一个经验值30作为下限.
+  //當描述子之間的距離大於兩倍的最小距離時,即認爲匹配有誤.但有時候最小距離會非常小,設置一個經驗值30作爲下限.
   for (int i = 0; i < descriptors_1.rows; i++) {
     if (match[i].distance <= max(2 * min_dist, 30.0)) {
       matches.push_back(match[i]);
@@ -132,10 +132,10 @@ void pose_estimation_2d2d(
   const std::vector<KeyPoint> &keypoints_2,
   const std::vector<DMatch> &matches,
   Mat &R, Mat &t) {
-  // 相机内参,TUM Freiburg2
+  // 相機內參,TUM Freiburg2
   Mat K = (Mat_<double>(3, 3) << 520.9, 0, 325.1, 0, 521.0, 249.7, 0, 0, 1);
 
-  //-- 把匹配点转换为vector<Point2f>的形式
+  //-- 把匹配點轉換爲vector<Point2f>的形式
   vector<Point2f> points1;
   vector<Point2f> points2;
 
@@ -144,13 +144,13 @@ void pose_estimation_2d2d(
     points2.push_back(keypoints_2[matches[i].trainIdx].pt);
   }
 
-  //-- 计算本质矩阵
-  Point2d principal_point(325.1, 249.7);        //相机主点, TUM dataset标定值
-  int focal_length = 521;            //相机焦距, TUM dataset标定值
+  //-- 計算本質矩陣
+  Point2d principal_point(325.1, 249.7);        //相機主點, TUM dataset標定值
+  int focal_length = 521;            //相機焦距, TUM dataset標定值
   Mat essential_matrix;
   essential_matrix = findEssentialMat(points1, points2, focal_length, principal_point);
 
-  //-- 从本质矩阵中恢复旋转和平移信息.
+  //-- 從本質矩陣中恢復旋轉和平移信息.
   recoverPose(essential_matrix, points1, points2, R, t, focal_length, principal_point);
 }
 
@@ -173,7 +173,7 @@ void triangulation(
   Mat K = (Mat_<double>(3, 3) << 520.9, 0, 325.1, 0, 521.0, 249.7, 0, 0, 1);
   vector<Point2f> pts_1, pts_2;
   for (DMatch m:matches) {
-    // 将像素坐标转换至相机坐标
+    // 將像素座標轉換至相機座標
     pts_1.push_back(pixel2cam(keypoint_1[m.queryIdx].pt, K));
     pts_2.push_back(pixel2cam(keypoint_2[m.trainIdx].pt, K));
   }
@@ -181,10 +181,10 @@ void triangulation(
   Mat pts_4d;
   cv::triangulatePoints(T1, T2, pts_1, pts_2, pts_4d);
 
-  // 转换成非齐次坐标
+  // 轉換成非齊次座標
   for (int i = 0; i < pts_4d.cols; i++) {
     Mat x = pts_4d.col(i);
-    x /= x.at<float>(3, 0); // 归一化
+    x /= x.at<float>(3, 0); // 歸一化
     Point3d p(
       x.at<float>(0, 0),
       x.at<float>(1, 0),

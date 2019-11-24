@@ -11,8 +11,8 @@ struct Frame;
 struct Feature;
 
 /**
- * 路标点类
- * 特征点在三角化之后形成路标点
+ * 路標點類
+ * 特徵點在三角化之後形成路標點
  */
 struct MapPoint {
    public:

@@ -8,22 +8,22 @@ using namespace std;
 using namespace Eigen;
 
 int main(int argc, char **argv) {
-  double ar = 1.0, br = 2.0, cr = 1.0;         // 真实参数值
-  double ae = 2.0, be = -1.0, ce = 5.0;        // 估计参数值
-  int N = 100;                                 // 数据点
-  double w_sigma = 1.0;                        // 噪声Sigma值
+  double ar = 1.0, br = 2.0, cr = 1.0;         // 真實參數值
+  double ae = 2.0, be = -1.0, ce = 5.0;        // 估計參數值
+  int N = 100;                                 // 數據點
+  double w_sigma = 1.0;                        // 噪聲Sigma值
   double inv_sigma = 1.0 / w_sigma;
-  cv::RNG rng;                                 // OpenCV随机数产生器
+  cv::RNG rng;                                 // OpenCV隨機數產生器
 
-  vector<double> x_data, y_data;      // 数据
+  vector<double> x_data, y_data;      // 數據
   for (int i = 0; i < N; i++) {
     double x = i / 100.0;
     x_data.push_back(x);
     y_data.push_back(exp(ar * x * x + br * x + cr) + rng.gaussian(w_sigma * w_sigma));
   }
 
-  // 开始Gauss-Newton迭代
-  int iterations = 100;    // 迭代次数
+  // 開始Gauss-Newton迭代
+  int iterations = 100;    // 迭代次數
   double cost = 0, lastCost = 0;  // 本次迭代的cost和上一次迭代的cost
 
   chrono::steady_clock::time_point t1 = chrono::steady_clock::now();
@@ -34,9 +34,9 @@ int main(int argc, char **argv) {
     cost = 0;
 
     for (int i = 0; i < N; i++) {
-      double xi = x_data[i], yi = y_data[i];  // 第i个数据点
+      double xi = x_data[i], yi = y_data[i];  // 第i個數據點
       double error = yi - exp(ae * xi * xi + be * xi + ce);
-      Vector3d J; // 雅可比矩阵
+      Vector3d J; // 雅可比矩陣
       J[0] = -xi * xi * exp(ae * xi * xi + be * xi + ce);  // de/da
       J[1] = -xi * exp(ae * xi * xi + be * xi + ce);  // de/db
       J[2] = -exp(ae * xi * xi + be * xi + ce);  // de/dc
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
       cost += error * error;
     }
 
-    // 求解线性方程 Hx=b
+    // 求解線性方程 Hx=b
     Vector3d dx = H.ldlt().solve(b);
     if (isnan(dx[0])) {
       cout << "result is nan!" << endl;

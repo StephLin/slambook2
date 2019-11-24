@@ -15,7 +15,7 @@
 namespace myslam {
 
 /**
- * 可视化
+ * 可視化
  */
 class Viewer {
    public:
@@ -28,10 +28,10 @@ class Viewer {
 
     void Close();
 
-    // 增加一个当前帧
+    // 增加一個當前幀
     void AddCurrentFrame(Frame::Ptr current_frame);
 
-    // 更新地图
+    // 更新地圖
     void UpdateMap();
 
    private:

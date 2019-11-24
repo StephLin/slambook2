@@ -49,7 +49,7 @@ void Map::InsertMapPoint(MapPoint::Ptr map_point) {
 
 void Map::RemoveOldKeyframe() {
     if (current_frame_ == nullptr) return;
-    // 寻找与当前帧最近与最远的两个关键帧
+    // 尋找與當前幀最近與最遠的兩個關鍵幀
     double max_dis = 0, min_dis = 9999;
     double max_kf_id = 0, min_kf_id = 0;
     auto Twc = current_frame_->Pose().inverse();
@@ -66,13 +66,13 @@ void Map::RemoveOldKeyframe() {
         }
     }
 
-    const double min_dis_th = 0.2;  // 最近阈值
+    const double min_dis_th = 0.2;  // 最近閾值
     Frame::Ptr frame_to_remove = nullptr;
     if (min_dis < min_dis_th) {
-        // 如果存在很近的帧，优先删掉最近的
+        // 如果存在很近的幀，優先刪掉最近的
         frame_to_remove = keyframes_.at(min_kf_id);
     } else {
-        // 删掉最远的
+        // 刪掉最遠的
         frame_to_remove = keyframes_.at(max_kf_id);
     }
 

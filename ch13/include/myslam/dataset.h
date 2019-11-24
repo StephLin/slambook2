@@ -7,9 +7,9 @@
 namespace myslam {
 
 /**
- * 数据集读取
- * 构造时传入配置文件路径，配置文件的dataset_dir为数据集路径
- * Init之后可获得相机和下一帧图像
+ * 數據集讀取
+ * 構造時傳入配置文件路徑，配置文件的dataset_dir爲數據集路徑
+ * Init之後可獲得相機和下一幀圖像
  */
 class Dataset {
    public:

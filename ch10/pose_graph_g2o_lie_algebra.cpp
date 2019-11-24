@@ -17,15 +17,15 @@ using Sophus::SE3d;
 using Sophus::SO3d;
 
 /************************************************
- * 本程序演示如何用g2o solver进行位姿图优化
- * sphere.g2o是人工生成的一个Pose graph，我们来优化它。
- * 尽管可以直接通过load函数读取整个图，但我们还是自己来实现读取代码，以期获得更深刻的理解
- * 本节使用李代数表达位姿图，节点和边的方式为自定义
+ * 本程序演示如何用g2o solver進行位姿圖優化
+ * sphere.g2o是人工生成的一個Pose graph，我們來優化它。
+ * 儘管可以直接通過load函數讀取整個圖，但我們還是自己來實現讀取代碼，以期獲得更深刻的理解
+ * 本節使用李代數表達位姿圖，節點和邊的方式爲自定義
  * **********************************************/
 
 typedef Matrix<double, 6, 6> Matrix6d;
 
-// 给定误差求J_R^{-1}的近似
+// 給定誤差求J_R^{-1}的近似
 Matrix6d JRInv(const SE3d &e) {
     Matrix6d J;
     J.block(0, 0, 3, 3) = SO3d::hat(e.so3().log());
@@ -37,7 +37,7 @@ Matrix6d JRInv(const SE3d &e) {
     return J;
 }
 
-// 李代数顶点
+// 李代數頂點
 typedef Matrix<double, 6, 1> Vector6d;
 
 class VertexSE3LieAlgebra : public g2o::BaseVertex<6, SE3d> {
@@ -74,7 +74,7 @@ public:
     }
 };
 
-// 两个李代数节点之边
+// 兩個李代數節點之邊
 class EdgeSE3LieAlgebra : public g2o::BaseBinaryEdge<6, SE3d, VertexSE3LieAlgebra, VertexSE3LieAlgebra> {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -113,19 +113,19 @@ public:
         return true;
     }
 
-    // 误差计算与书中推导一致
+    // 誤差計算與書中推導一致
     virtual void computeError() override {
         SE3d v1 = (static_cast<VertexSE3LieAlgebra *> (_vertices[0]))->estimate();
         SE3d v2 = (static_cast<VertexSE3LieAlgebra *> (_vertices[1]))->estimate();
         _error = (_measurement.inverse() * v1.inverse() * v2).log();
     }
 
-    // 雅可比计算
+    // 雅可比計算
     virtual void linearizeOplus() override {
         SE3d v1 = (static_cast<VertexSE3LieAlgebra *> (_vertices[0]))->estimate();
         SE3d v2 = (static_cast<VertexSE3LieAlgebra *> (_vertices[1]))->estimate();
         Matrix6d J = JRInv(SE3d::exp(_error));
-        // 尝试把J近似为I？
+        // 嘗試把J近似爲I？
         _jacobianOplusXi = -J * v2.inverse().Adj();
         _jacobianOplusXj = J * v2.inverse().Adj();
     }
@@ -142,16 +142,16 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    // 设定g2o
+    // 設定g2o
     typedef g2o::BlockSolver<g2o::BlockSolverTraits<6, 6>> BlockSolverType;
     typedef g2o::LinearSolverEigen<BlockSolverType::PoseMatrixType> LinearSolverType;
     auto solver = new g2o::OptimizationAlgorithmLevenberg(
         g2o::make_unique<BlockSolverType>(g2o::make_unique<LinearSolverType>()));
-    g2o::SparseOptimizer optimizer;     // 图模型
-    optimizer.setAlgorithm(solver);   // 设置求解器
-    optimizer.setVerbose(true);       // 打开调试输出
+    g2o::SparseOptimizer optimizer;     // 圖模型
+    optimizer.setAlgorithm(solver);   // 設置求解器
+    optimizer.setVerbose(true);       // 打開調試輸出
 
-    int vertexCnt = 0, edgeCnt = 0; // 顶点和边的数量
+    int vertexCnt = 0, edgeCnt = 0; // 頂點和邊的數量
 
     vector<VertexSE3LieAlgebra *> vectices;
     vector<EdgeSE3LieAlgebra *> edges;
@@ -159,7 +159,7 @@ int main(int argc, char **argv) {
         string name;
         fin >> name;
         if (name == "VERTEX_SE3:QUAT") {
-            // 顶点
+            // 頂點
             VertexSE3LieAlgebra *v = new VertexSE3LieAlgebra();
             int index = 0;
             fin >> index;
@@ -171,9 +171,9 @@ int main(int argc, char **argv) {
             if (index == 0)
                 v->setFixed(true);
         } else if (name == "EDGE_SE3:QUAT") {
-            // SE3-SE3 边
+            // SE3-SE3 邊
             EdgeSE3LieAlgebra *e = new EdgeSE3LieAlgebra();
-            int idx1, idx2;     // 关联的两个顶点
+            int idx1, idx2;     // 關聯的兩個頂點
             fin >> idx1 >> idx2;
             e->setId(edgeCnt++);
             e->setVertex(0, optimizer.vertices()[idx1]);
@@ -193,8 +193,8 @@ int main(int argc, char **argv) {
 
     cout << "saving optimization results ..." << endl;
 
-    // 因为用了自定义顶点且没有向g2o注册，这里保存自己来实现
-    // 伪装成 SE3 顶点和边，让 g2o_viewer 可以认出
+    // 因爲用了自定義頂點且沒有向g2o註冊，這裏保存自己來實現
+    // 僞裝成 SE3 頂點和邊，讓 g2o_viewer 可以認出
     ofstream fout("result_lie.g2o");
     for (VertexSE3LieAlgebra *v:vectices) {
         fout << "VERTEX_SE3:QUAT ";

@@ -14,8 +14,8 @@ using namespace std;
 #include <pcl/filters/statistical_outlier_removal.h>
 
 int main(int argc, char **argv) {
-    vector<cv::Mat> colorImgs, depthImgs;    // 彩色图和深度图
-    vector<Eigen::Isometry3d> poses;         // 相机位姿
+    vector<cv::Mat> colorImgs, depthImgs;    // 彩色圖和深度圖
+    vector<Eigen::Isometry3d> poses;         // 相機位姿
 
     ifstream fin("./data/pose.txt");
     if (!fin) {
@@ -24,9 +24,9 @@ int main(int argc, char **argv) {
     }
 
     for (int i = 0; i < 5; i++) {
-        boost::format fmt("./data/%s/%d.%s"); //图像文件格式
+        boost::format fmt("./data/%s/%d.%s"); //圖像文件格式
         colorImgs.push_back(cv::imread((fmt % "color" % (i + 1) % "png").str()));
-        depthImgs.push_back(cv::imread((fmt % "depth" % (i + 1) % "png").str(), -1)); // 使用-1读取原始图像
+        depthImgs.push_back(cv::imread((fmt % "depth" % (i + 1) % "png").str(), -1)); // 使用-1讀取原始圖像
 
         double data[7] = {0};
         for (int i = 0; i < 7; i++) {
@@ -38,32 +38,32 @@ int main(int argc, char **argv) {
         poses.push_back(T);
     }
 
-    // 计算点云并拼接
-    // 相机内参 
+    // 計算點雲並拼接
+    // 相機內參 
     double cx = 319.5;
     double cy = 239.5;
     double fx = 481.2;
     double fy = -480.0;
     double depthScale = 5000.0;
 
-    cout << "正在将图像转换为点云..." << endl;
+    cout << "正在將圖像轉換爲點雲..." << endl;
 
-    // 定义点云使用的格式：这里用的是XYZRGB
+    // 定義點雲使用的格式：這裏用的是XYZRGB
     typedef pcl::PointXYZRGB PointT;
     typedef pcl::PointCloud<PointT> PointCloud;
 
-    // 新建一个点云
+    // 新建一個點雲
     PointCloud::Ptr pointCloud(new PointCloud);
     for (int i = 0; i < 5; i++) {
         PointCloud::Ptr current(new PointCloud);
-        cout << "转换图像中: " << i + 1 << endl;
+        cout << "轉換圖像中: " << i + 1 << endl;
         cv::Mat color = colorImgs[i];
         cv::Mat depth = depthImgs[i];
         Eigen::Isometry3d T = poses[i];
         for (int v = 0; v < color.rows; v++)
             for (int u = 0; u < color.cols; u++) {
                 unsigned int d = depth.ptr<unsigned short>(v)[u]; // 深度值
-                if (d == 0) continue; // 为0表示没有测量到
+                if (d == 0) continue; // 爲0表示沒有測量到
                 Eigen::Vector3d point;
                 point[2] = double(d) / depthScale;
                 point[0] = (u - cx) * point[2] / fx;
@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
     }
 
     pointCloud->is_dense = false;
-    cout << "点云共有" << pointCloud->size() << "个点." << endl;
+    cout << "點雲共有" << pointCloud->size() << "個點." << endl;
 
     // voxel filter 
     pcl::VoxelGrid<PointT> voxel_filter;
@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
     voxel_filter.filter(*tmp);
     tmp->swap(*pointCloud);
 
-    cout << "滤波之后，点云共有" << pointCloud->size() << "个点." << endl;
+    cout << "濾波之後，點雲共有" << pointCloud->size() << "個點." << endl;
 
     pcl::io::savePCDFileBinary("map.pcd", *pointCloud);
     return 0;

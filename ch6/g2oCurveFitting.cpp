@@ -14,7 +14,7 @@
 
 using namespace std;
 
-// 曲线模型的顶点，模板参数：优化变量维度和数据类型
+// 曲線模型的頂點，模板參數：優化變量維度和數據類型
 class CurveFittingVertex : public g2o::BaseVertex<3, Eigen::Vector3d> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -29,27 +29,27 @@ public:
     _estimate += Eigen::Vector3d(update);
   }
 
-  // 存盘和读盘：留空
+  // 存盤和讀盤：留空
   virtual bool read(istream &in) {}
 
   virtual bool write(ostream &out) const {}
 };
 
-// 误差模型 模板参数：观测值维度，类型，连接顶点类型
+// 誤差模型 模板參數：觀測值維度，類型，連接頂點類型
 class CurveFittingEdge : public g2o::BaseUnaryEdge<1, double, CurveFittingVertex> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   CurveFittingEdge(double x) : BaseUnaryEdge(), _x(x) {}
 
-  // 计算曲线模型误差
+  // 計算曲線模型誤差
   virtual void computeError() override {
     const CurveFittingVertex *v = static_cast<const CurveFittingVertex *> (_vertices[0]);
     const Eigen::Vector3d abc = v->estimate();
     _error(0, 0) = _measurement - std::exp(abc(0, 0) * _x * _x + abc(1, 0) * _x + abc(2, 0));
   }
 
-  // 计算雅可比矩阵
+  // 計算雅可比矩陣
   virtual void linearizeOplus() override {
     const CurveFittingVertex *v = static_cast<const CurveFittingVertex *> (_vertices[0]);
     const Eigen::Vector3d abc = v->estimate();
@@ -64,52 +64,52 @@ public:
   virtual bool write(ostream &out) const {}
 
 public:
-  double _x;  // x 值， y 值为 _measurement
+  double _x;  // x 值， y 值爲 _measurement
 };
 
 int main(int argc, char **argv) {
-  double ar = 1.0, br = 2.0, cr = 1.0;         // 真实参数值
-  double ae = 2.0, be = -1.0, ce = 5.0;        // 估计参数值
-  int N = 100;                                 // 数据点
-  double w_sigma = 1.0;                        // 噪声Sigma值
+  double ar = 1.0, br = 2.0, cr = 1.0;         // 真實參數值
+  double ae = 2.0, be = -1.0, ce = 5.0;        // 估計參數值
+  int N = 100;                                 // 數據點
+  double w_sigma = 1.0;                        // 噪聲Sigma值
   double inv_sigma = 1.0 / w_sigma;
-  cv::RNG rng;                                 // OpenCV随机数产生器
+  cv::RNG rng;                                 // OpenCV隨機數產生器
 
-  vector<double> x_data, y_data;      // 数据
+  vector<double> x_data, y_data;      // 數據
   for (int i = 0; i < N; i++) {
     double x = i / 100.0;
     x_data.push_back(x);
     y_data.push_back(exp(ar * x * x + br * x + cr) + rng.gaussian(w_sigma * w_sigma));
   }
 
-  // 构建图优化，先设定g2o
-  typedef g2o::BlockSolver<g2o::BlockSolverTraits<3, 1>> BlockSolverType;  // 每个误差项优化变量维度为3，误差值维度为1
-  typedef g2o::LinearSolverDense<BlockSolverType::PoseMatrixType> LinearSolverType; // 线性求解器类型
+  // 構建圖優化，先設定g2o
+  typedef g2o::BlockSolver<g2o::BlockSolverTraits<3, 1>> BlockSolverType;  // 每個誤差項優化變量維度爲3，誤差值維度爲1
+  typedef g2o::LinearSolverDense<BlockSolverType::PoseMatrixType> LinearSolverType; // 線性求解器類型
 
-  // 梯度下降方法，可以从GN, LM, DogLeg 中选
+  // 梯度下降方法，可以從GN, LM, DogLeg 中選
   auto solver = new g2o::OptimizationAlgorithmGaussNewton(
     g2o::make_unique<BlockSolverType>(g2o::make_unique<LinearSolverType>()));
-  g2o::SparseOptimizer optimizer;     // 图模型
-  optimizer.setAlgorithm(solver);   // 设置求解器
-  optimizer.setVerbose(true);       // 打开调试输出
+  g2o::SparseOptimizer optimizer;     // 圖模型
+  optimizer.setAlgorithm(solver);   // 設置求解器
+  optimizer.setVerbose(true);       // 打開調試輸出
 
-  // 往图中增加顶点
+  // 往圖中增加頂點
   CurveFittingVertex *v = new CurveFittingVertex();
   v->setEstimate(Eigen::Vector3d(ae, be, ce));
   v->setId(0);
   optimizer.addVertex(v);
 
-  // 往图中增加边
+  // 往圖中增加邊
   for (int i = 0; i < N; i++) {
     CurveFittingEdge *edge = new CurveFittingEdge(x_data[i]);
     edge->setId(i);
-    edge->setVertex(0, v);                // 设置连接的顶点
-    edge->setMeasurement(y_data[i]);      // 观测数值
-    edge->setInformation(Eigen::Matrix<double, 1, 1>::Identity() * 1 / (w_sigma * w_sigma)); // 信息矩阵：协方差矩阵之逆
+    edge->setVertex(0, v);                // 設置連接的頂點
+    edge->setMeasurement(y_data[i]);      // 觀測數值
+    edge->setInformation(Eigen::Matrix<double, 1, 1>::Identity() * 1 / (w_sigma * w_sigma)); // 信息矩陣：協方差矩陣之逆
     optimizer.addEdge(edge);
   }
 
-  // 执行优化
+  // 執行優化
   cout << "start optimization" << endl;
   chrono::steady_clock::time_point t1 = chrono::steady_clock::now();
   optimizer.initializeOptimization();
@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
   chrono::duration<double> time_used = chrono::duration_cast<chrono::duration<double>>(t2 - t1);
   cout << "solve time cost = " << time_used.count() << " seconds. " << endl;
 
-  // 输出优化值
+  // 輸出優化值
   Eigen::Vector3d abc_estimate = v->estimate();
   cout << "estimated model: " << abc_estimate.transpose() << endl;
 
